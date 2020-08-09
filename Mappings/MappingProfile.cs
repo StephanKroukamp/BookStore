@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using BookStore.Entities;
-using BookStore.Requests;
+using BookStore.Resources;
 
 namespace BookStore.Mappings
 {
@@ -8,8 +8,24 @@ namespace BookStore.Mappings
     {
         public MappingProfile()
         {
-            CreateMap<SignUpRequest, User>()
-                .ForMember(u => u.UserName, opt => opt.MapFrom(ur => ur.Email));
+            // Entity to Resource
+            CreateMap<Author, AuthorResource>();
+
+            CreateMap<Book, BookResource>()
+                .ForMember(book => book.Author, opt => opt.MapFrom(resource => resource.Author));
+
+            // Resource to Entity
+            CreateMap<AuthorResource, Author>();
+            CreateMap<SaveAuthorResource, Author>();
+
+            CreateMap<BookResource, Book>();
+            CreateMap<SaveBookResource, Book>();
+
+            CreateMap<SignUpResource, User>()
+                .ForMember(user => user.UserName, opt => opt.MapFrom(resource => resource.UserName))
+                .ForMember(user => user.Email, opt => opt.MapFrom(resource => resource.Email))
+                .ForMember(user => user.FirstName, opt => opt.MapFrom(resource => resource.FirstName))
+                .ForMember(user => user.LastName, opt => opt.MapFrom(resource => resource.LastName));
         }
     }
 }

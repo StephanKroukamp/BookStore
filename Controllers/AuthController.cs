@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
@@ -8,8 +7,9 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using BookStore.Entities;
-using BookStore.Requests;
+using BookStore.Resources;
 using BookStore.Setttings;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -41,11 +41,11 @@ namespace BookStore.Controllers
         }
 
         [HttpPost("signup")]
-        public async Task<IActionResult> SignUp([FromBody] SignUpRequest signUpRequest)
+        public async Task<IActionResult> SignUp([FromBody] SignUpResource signUpResource)
         {
-            var user = _mapper.Map<SignUpRequest, User>(signUpRequest);
+            var user = _mapper.Map<SignUpResource, User>(signUpResource);
 
-            var userCreateResult = await _userManager.CreateAsync(user, signUpRequest.Password);
+            var userCreateResult = await _userManager.CreateAsync(user, signUpResource.Password);
 
             if (userCreateResult.Succeeded)
             {
@@ -56,16 +56,16 @@ namespace BookStore.Controllers
         }
 
         [HttpPost("SignIn")]
-        public async Task<IActionResult> SignIn(SignInRequest signInRequest)
+        public async Task<IActionResult> SignIn([FromBody] SignInResource signInResource)
         {
-            var user = _userManager.Users.SingleOrDefault(u => u.UserName == signInRequest.Email);
+            var user = _userManager.Users.SingleOrDefault(u => u.Email == signInResource.Email);
 
             if (user is null)
             {
                 return NotFound("User not found");
             }
 
-            var userSigninResult = await _userManager.CheckPasswordAsync(user, signInRequest.Password);
+            var userSigninResult = await _userManager.CheckPasswordAsync(user, signInResource.Password);
 
             if (userSigninResult)
             {
@@ -78,6 +78,7 @@ namespace BookStore.Controllers
         }
 
         [HttpPost("Roles")]
+        [Authorize("AdministratorPolicy")]
         public async Task<IActionResult> CreateRole(string roleName)
         {
             if (string.IsNullOrWhiteSpace(roleName))
@@ -100,10 +101,11 @@ namespace BookStore.Controllers
             return Problem(roleResult.Errors.First().Description, null, 500);
         }
 
-        [HttpPost("User/{userEmail}/Role")]
-        public async Task<IActionResult> AddUserToRole(string userEmail, [FromBody] string roleName)
+        [HttpPost("User/Role")]
+        [Authorize("AdministratorPolicy")]
+        public async Task<IActionResult> AddUserToRole(string email, string roleName)
         {
-            var user = _userManager.Users.SingleOrDefault(u => u.UserName == userEmail);
+            var user = _userManager.Users.SingleOrDefault(u => u.Email == email);
 
             var result = await _userManager.AddToRoleAsync(user, roleName);
 

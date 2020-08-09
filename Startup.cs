@@ -1,7 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Text;
+using AutoMapper;
 using BookStore.Entities;
-using BookStore.Extensions;
+using BookStore.Repositories;
+using BookStore.Services;
 using BookStore.Setttings;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -9,9 +14,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using AutoMapper;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Collections.Generic;
 
 namespace BookStore
 {
@@ -45,6 +49,11 @@ namespace BookStore
                 })
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
+
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            services.AddTransient<IAuthorService, AuthorService>();
+            services.AddTransient<IBookService, BookService>();
 
             services.AddSwaggerGen(options =>
             {
@@ -83,7 +92,30 @@ namespace BookStore
 
             JwtSettings jwtSettings = Configuration.GetSection("Jwt").Get<JwtSettings>();
 
-            services.AddAuth(jwtSettings);
+            services
+                .AddAuthorization(options =>
+                {
+                    options.AddPolicy("AdministratorPolicy", policy => {
+                        policy.RequireUserName("administrator");
+                    });
+                })
+                .AddAuthentication(options =>
+                {
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(options =>
+                {
+                    options.RequireHttpsMetadata = false;
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidIssuer = jwtSettings.Issuer,
+                        ValidAudience = jwtSettings.Issuer,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret)),
+                        ClockSkew = TimeSpan.Zero
+                    };
+                });
         }
         
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -97,7 +129,9 @@ namespace BookStore
 
             app.UseRouting();
 
-            app.UseAuth();
+            app.UseAuthentication();
+
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
