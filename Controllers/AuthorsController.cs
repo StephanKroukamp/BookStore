@@ -12,7 +12,6 @@ namespace BookStore.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class AuthorsController : ControllerBase
     {
         private readonly IAuthorService _authorService;
