@@ -41,6 +41,7 @@ namespace BookStore.Controllers
         }
 
         [HttpPost("signup")]
+        [AllowAnonymous]
         public async Task<IActionResult> SignUp([FromBody] SignUpResource signUpResource)
         {
             var user = _mapper.Map<SignUpResource, User>(signUpResource);
@@ -56,6 +57,7 @@ namespace BookStore.Controllers
         }
 
         [HttpPost("SignIn")]
+        [AllowAnonymous]
         public async Task<IActionResult> SignIn([FromBody] SignInResource signInResource)
         {
             var user = _userManager.Users.SingleOrDefault(u => u.Email == signInResource.Email);
@@ -78,7 +80,7 @@ namespace BookStore.Controllers
         }
 
         [HttpPost("Roles")]
-        [Authorize("AdministratorPolicy")]
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> CreateRole(string roleName)
         {
             if (string.IsNullOrWhiteSpace(roleName))
@@ -102,7 +104,7 @@ namespace BookStore.Controllers
         }
 
         [HttpPost("User/Role")]
-        [Authorize("AdministratorPolicy")]
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> AddUserToRole(string email, string roleName)
         {
             var user = _userManager.Users.SingleOrDefault(u => u.Email == email);

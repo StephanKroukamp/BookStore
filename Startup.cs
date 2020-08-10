@@ -30,11 +30,18 @@ namespace BookStore
         
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<CorsSettings>(Configuration.GetSection("Cors"));
+            services.Configure<JwtSettings>(Configuration.GetSection("Jwt"));
+
+            CorsSettings corsSettings = Configuration.GetSection("Cors").Get<CorsSettings>();
+            JwtSettings jwtSettings = Configuration.GetSection("Jwt").Get<JwtSettings>();
+
             services.AddCors(o => o.AddPolicy("CorsPolicy", builder =>
             {
-                builder.AllowAnyOrigin()
-                       .AllowAnyMethod()
-                       .AllowAnyHeader();
+                builder
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .WithOrigins(corsSettings.FrontEndBaseUrl);
             }));
 
             services
@@ -95,17 +102,8 @@ namespace BookStore
 
             services.AddAutoMapper(typeof(Startup));
 
-            services.Configure<JwtSettings>(Configuration.GetSection("Jwt"));
-
-            JwtSettings jwtSettings = Configuration.GetSection("Jwt").Get<JwtSettings>();
-
             services
-                .AddAuthorization(options =>
-                {
-                    options.AddPolicy("AdministratorPolicy", policy => {
-                        policy.RequireUserName("administrator");
-                    });
-                })
+                .AddAuthorization()
                 .AddAuthentication(options =>
                 {
                     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

@@ -26,6 +26,7 @@ namespace BookStore.Controllers
         }
 
         [HttpGet("")]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<AuthorResource>>> GetAllAuthors()
         {
             var authors = await _authorService.GetAllAuthors();
@@ -36,6 +37,7 @@ namespace BookStore.Controllers
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<AuthorResource>> GetAuthorById(int id)
         {
             var author = await _authorService.GetAuthorById(id);
@@ -46,6 +48,7 @@ namespace BookStore.Controllers
         }
 
         [HttpPost("")]
+        [Authorize(Roles = "Administrator, Manager")]
         public async Task<ActionResult<AuthorResource>> CreateAuthor([FromBody] SaveAuthorResource saveAuthorResource)
         {
             var validator = new SaveAuthorResourceValidator();
@@ -69,6 +72,7 @@ namespace BookStore.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Administrator, Manager")]
         public async Task<ActionResult<AuthorResource>> UpdateAuthor(int id, [FromBody] SaveAuthorResource saveAuthorResource)
         {
             var validator = new SaveAuthorResourceValidator();
@@ -99,6 +103,7 @@ namespace BookStore.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Administrator, Manager")]
         public async Task<IActionResult> DeleteAuthor(int id)
         {
             var author = await _authorService.GetAuthorById(id);

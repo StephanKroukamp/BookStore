@@ -5,6 +5,7 @@ using BookStore.Entities;
 using BookStore.Resources;
 using BookStore.Services;
 using BookStore.Validators;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookStore.Controllers
@@ -25,6 +26,7 @@ namespace BookStore.Controllers
         }
 
         [HttpGet("")]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<BookResource>>> GetAllBooks()
         {
             var books = await _booksService.GetAllWithAuthor();
@@ -35,6 +37,7 @@ namespace BookStore.Controllers
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<BookResource>> GetBookByIdWithAuthor(int id)
         {
             var book = await _booksService.GetBookByIdWithAuthor(id);
@@ -45,6 +48,7 @@ namespace BookStore.Controllers
         }
 
         [HttpPost("")]
+        [Authorize(Roles = "Administrator, Manager")]
         public async Task<ActionResult<BookResource>> CreateBook([FromBody] SaveBookResource saveBookResource)
         {
             var validator = new SaveBookResourceValidator();
@@ -68,6 +72,7 @@ namespace BookStore.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Administrator, Manager")]
         public async Task<ActionResult<BookResource>> UpdateBook(int id, [FromBody] SaveBookResource saveBookResource)
         {
             var validator = new SaveBookResourceValidator();
@@ -100,6 +105,7 @@ namespace BookStore.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Administrator, Manager")]
         public async Task<IActionResult> DeleteBook(int id)
         {
             if (id == 0)
