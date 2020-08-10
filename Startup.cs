@@ -41,6 +41,7 @@ namespace BookStore
                 builder
                 .AllowAnyMethod()
                 .AllowAnyHeader()
+                .AllowCredentials()
                 .WithOrigins(corsSettings.FrontEndBaseUrl);
             }));
 
