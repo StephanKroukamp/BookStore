@@ -98,6 +98,7 @@ namespace BookStore
                             new List<string>()
                         }
                     };
+
                 options.AddSecurityRequirement(security);
             });
 
