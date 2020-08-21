@@ -57,7 +57,7 @@ namespace BookStore.Controllers
 
             if (!validationResult.IsValid)
             {
-                return BadRequest(validationResult.Errors); // this needs refining, but for demo it is ok
+                return BadRequest(validationResult.Errors); // this needs refining
             }
 
             var bookToCreate = _mapper.Map<SaveBookResource, Book>(saveBookResource);
@@ -83,7 +83,7 @@ namespace BookStore.Controllers
 
             if (requestIsInvalid)
             {
-                return BadRequest(validationResult.Errors); // this needs refining, but for demo it is ok
+                return BadRequest(validationResult.Errors); // this needs refining
             }
 
             var bookToBeUpdated = await _booksService.GetBookByIdWithAuthor(id);
